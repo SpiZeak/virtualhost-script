@@ -10,7 +10,7 @@ A shell script for creating virtualhosts with command line
 ## Usage
 `virtualhost`
 
-Usage: virtualhost <name> [<optional path>]
+```Usage: virtualhost <name> [<optional path>]
        virtualhost list
        virtualhost edit <name>
        virtualhost delete <name>
