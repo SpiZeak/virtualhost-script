@@ -2,7 +2,7 @@
 #================================================================================
 # virtualhost 1.0
 #
-# A shell script for creating virtualhosts with command line.
+# A fancy little script to manage virtualhosts on Mac OS X.
 #
 # For usage help and available commands run `virtualhost`.
 #================================================================================
@@ -45,7 +45,7 @@ fi
 # Configure the apache-related paths
 #
 : ${APACHE_CONFIG:="/usr/local/etc/httpd"}
-: ${APACHECTL:="/usr/sbin/apachectl"}
+: ${APACHECTL:="/usr/local/bin/apachectl"}
 
 # If you wish to change the default application that gets launched after the
 # virtual host is created, define it here:
@@ -172,7 +172,9 @@ create_virtualhost()
 <VirtualHost $VIRTUALHOST:$APACHE_PORT>
   DocumentRoot "$2"
   ServerName $VIRTUALHOST
+
   ScriptAlias /cgi-bin "$2/cgi-bin"
+
   <Directory "$2">
     Options All
     AllowOverride All
@@ -185,14 +187,17 @@ create_virtualhost()
     </IfModule>
   </Directory>
 </VirtualHost>
+
 <VirtualHost $VIRTUALHOST:443>
     Protocols h2 http/1.1
     ServerName $VIRTUALHOST
     DocumentRoot "$2"
+
     SSLEngine on
     SSLCipherSuite ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP:+eNULL
     SSLCertificateFile /usr/local/etc/httpd/ssl/localhost.crt
     SSLCertificateKeyFile /usr/local/etc/httpd/ssl/localhost.key
+
     <Directory "$2">
         Options Indexes FollowSymLinks
         AllowOverride All
@@ -268,12 +273,6 @@ if (( $APACHE_MAJOR_VERSION < 2 )); then
   exit 1
 fi
 
-# catch Ctrl-C
-#trap 'cleanup' 2
-
-# restore it
-#trap '' 2
-
 if [ -z $USER -o $USER = "root" ]; then
   if [ ! -z $SUDO_USER ]; then
     USER=$SUDO_USER
@@ -312,6 +311,7 @@ Usage: virtualhost <name> [<optional path>]
        virtualhost edit <name>
        virtualhost delete <name>
    where <name> is the one-word name you'd like to use. (e.g. mysite.dev)
+
 __EOT
   exit 1
 }
@@ -724,13 +724,16 @@ if checkyesno ${CREATE_INDEX}; then
 </style>
 </head>
 <body link="#993300" vlink="#771100" alink="#ff6600">
+
 <table border="0" width="100%" height="95%"><tr><td align="center" valign="middle">
 <div style="width: 500px; background-color: #eeeeee; border: 1px dotted #cccccc; padding: 20px; padding-top: 15px;">
  <div align="center" style="font-size: 14px; font-weight: bold;">
   Congratulations!
  </div>
+
  <div align="left">
   <p>If you are reading this in your web browser, then the only logical conclusion is that the <b><a href="http://$VIRTUALHOST:$APACHE_PORT/">http://$VIRTUALHOST:$APACHE_PORT/</a></b> virtualhost was set up correctly. :)</p>
+
   <p>You can find the configuration file for this virtual host in:<br>
   <table class="indent" border="0" cellspacing="3">
    <tr>
@@ -739,6 +742,7 @@ if checkyesno ${CREATE_INDEX}; then
    </tr>
   </table>
   </p>
+
   <p>You will need to place all of your website files in:<br>
   <table class="indent" border="0" cellspacing="3">
    <tr>
@@ -747,6 +751,7 @@ if checkyesno ${CREATE_INDEX}; then
    </tr>
   </table>
   </p>
+
   <p>For the latest version of this script, tips, comments, <span style="font-size: 10px; color: #999999;">donations,</span> etc. visit:<br>
   <table class="indent" border="0" cellspacing="3">
    <tr>
@@ -756,8 +761,10 @@ if checkyesno ${CREATE_INDEX}; then
   </table>
   </p>
  </div>
+
 </div>
 </td></tr></table>
+
 </body>
 </html>
 __EOF
@@ -791,17 +798,7 @@ fi
 restart_apache
 
 cat << __EOF
+
 http://$VIRTUALHOST:$APACHE_PORT/ is set up and ready for use.
+
 __EOF
-
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Launch the new URL in the browser
-#
-if [ -z $SKIP_BROWSER ]; then
-  /bin/echo -n "Launching virtualhost... "
-  sleep 1
-  curl --silent http://$VIRTUALHOST:$APACHE_PORT/ 2>&1 >/dev/null
-  open_command "http://$VIRTUALHOST:$APACHE_PORT/"
-  /bin/echo "done"
-fi
